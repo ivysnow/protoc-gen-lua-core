@@ -273,6 +273,31 @@ void FileGenerator::GenerateMessageDescriptor(const Descriptor* messageType)
 			"index", fmt::format("{}", field->index()),
 			"label", fmt::format("{}", field->label())
 		);
+		switch (field->cpp_type())
+		{
+		case FieldDescriptor::CPPTYPE_INT32:
+		case FieldDescriptor::CPPTYPE_INT64:
+		case FieldDescriptor::CPPTYPE_UINT32:
+		case FieldDescriptor::CPPTYPE_UINT64:
+		case FieldDescriptor::CPPTYPE_DOUBLE:
+		case FieldDescriptor::CPPTYPE_FLOAT:
+		case FieldDescriptor::CPPTYPE_BOOL:
+		case FieldDescriptor::CPPTYPE_ENUM:
+		{
+			m_printer.Print(
+				"$varName$.Fields.$fieldName$.has_options = $has_options$;\n"
+				"$varName$.Fields.$fieldName$.GetOptions = function () return { packed = $packed$ }; end;\n",
+				"varName", varName,
+				"fieldName", field->name(),
+				"has_options", field->label() == FieldDescriptor::LABEL_REPEATED ? "true" : "false",
+				"packed", field->label() == FieldDescriptor::LABEL_REPEATED ? "true" : "false"
+			);
+			break;
+		}
+
+		default:
+			break;
+		}
 		m_printer.Print(
 			"$varName$.Fields.$fieldName$.has_default_value = $has_default_value$;\n"
 			"$varName$.Fields.$fieldName$.default_value = $default_value$;\n",
